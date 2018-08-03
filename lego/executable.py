@@ -1,10 +1,6 @@
-#!python
-
-
 """
 Executable for Lego configuration management tool.
 """
-
 
 import sys
 from lego.builder import Builder

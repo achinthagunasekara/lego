@@ -2,13 +2,11 @@
 Setup for Lego configuration management tool.
 """
 
-
 from setuptools import setup
 
 
 with open('requirements.txt') as requirements_file:
     required = requirements_file.read().splitlines()  # pylint: disable=invalid-name
-
 
 setup(
     name='lego',

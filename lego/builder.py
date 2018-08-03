@@ -2,7 +2,6 @@
 Lego Builder.
 """
 
-
 import yaml
 from lego.common import LegoException
 
