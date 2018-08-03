@@ -1,0 +1,22 @@
+---
+
+"Install Apache":
+  type: package
+  provider: apt
+  state: present
+  packages:
+    - apache
+    - php
+
+"Create Sample PHP Page":
+  type: file
+  state: present
+  files:
+    - source: files/index.php
+      destination: /var/www/html/index.php
+
+"Restart Apache Service":
+  type: service
+  action: restart
+  services:
+    - apache2
