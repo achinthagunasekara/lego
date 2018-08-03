@@ -10,7 +10,7 @@ Lego configuration management tool.
 .
 ├── brick_sets
 │   └── php_web_server
-│       └── bricks.yml
+│       └── bricks.yaml
 └── server.yaml
 ```
 
@@ -21,7 +21,7 @@ Lego configuration management tool.
 ```
 ---
 
-brick_set:
+brick_sets:
   - php_web_server
 ```
 

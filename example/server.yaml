@@ -1,4 +1,4 @@
 ---
 
-brick_set:
+brick_sets:
   - php_web_server
