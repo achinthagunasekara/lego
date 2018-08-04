@@ -32,7 +32,7 @@ brick_sets:
 ```
 ---
 
-"Install Apache":
+"Install Packages":
   type: package
   provider: apt
   state: present
@@ -43,8 +43,11 @@ brick_sets:
 "Create Sample PHP Page":
   type: file
   state: present
+  owner: root
+  group: root
+  mode: 0755
   files:
-    - source: files/index.php
+    - source: index.php
       destination: /var/www/html/index.php
 
 "Restart Apache Service":

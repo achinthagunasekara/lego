@@ -6,6 +6,7 @@ import logging
 import yaml
 from lego.common import LegoException
 from lego.builder_modules.packages import manage_packages
+from lego.builder_modules.files import manage_files
 
 
 class Builder(object):
@@ -20,13 +21,13 @@ class Builder(object):
     ]
 
     def __init__(self, builder_file):
-        self.__logger = logging.getLogger('Builder')
+        self.__logger = logging.getLogger('lego.builder.Builder')
         self.__builder_file = builder_file
-        self.__bricks = {}
+        self.__brick_sets = {}
         self.__load_bricks()
 
     @property
-    def bricks(self):
+    def brick_sets(self):
         """
         Return builder instructions property.
         Args:
@@ -34,7 +35,7 @@ class Builder(object):
         Returns:
             dictionary: Builder instructions dictionary.
         """
-        return self.__bricks
+        return self.__brick_sets
 
     def __load_bricks(self):
         """
@@ -62,7 +63,7 @@ class Builder(object):
 
             with open("brick_sets/{0}/bricks.yaml".format(each_brick_set), 'r') as stream:
                 try:
-                    self.__bricks.update(yaml.load(stream))
+                    self.__brick_sets[each_brick_set] = yaml.load(stream)
                 except yaml.YAMLError as yaml_ex:
                     raise LegoException(message="Something went wrong while loading "
                                                 "brick set `{0}` the builder file with "
@@ -78,14 +79,20 @@ class Builder(object):
         Raises:
             None
         """
-        for brick_name, brick_details in self.__bricks.items():
+        for brick_set_name, brick_set in self.__brick_sets.items():
+            self.__logger.info("Running brick set `%s`", brick_set_name)
 
-            self.__logger.info("Running brick `%s`", brick_name)
+            for brick_name, brick_details in brick_set.items():
 
-            if brick_details['type'] not in self.__supported_modules:
-                raise LegoException(message="Unknown brick type `{0}`. Only brick types {1} "
-                                            "are supported".format(brick_details['type'],
-                                                                   self.__supported_modules))
+                self.__logger.info("Running brick `%s`", brick_name)
 
-            if brick_details['type'] == 'package':
-                manage_packages(attributes=brick_details)
+                if brick_details['type'] not in self.__supported_modules:
+                    raise LegoException(message="Unknown brick type `{0}`. Only brick types {1} "
+                                                "are supported".format(brick_details['type'],
+                                                                       self.__supported_modules))
+
+                if brick_details['type'] == 'package':
+                    manage_packages(attributes=brick_details)
+
+                if brick_details['type'] == 'file':
+                    manage_files(brick_set_name=brick_set_name, attributes=brick_details)

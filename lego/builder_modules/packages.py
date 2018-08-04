@@ -3,7 +3,7 @@ Module to manage packges on a system and it's supporting modules.
 """
 
 import logging
-from lego.common import LegoException, validate
+from lego.common import LegoException, validate_attributes
 
 
 SUPPORTED_PACKAGE_PROVIDERS = [
@@ -29,10 +29,10 @@ def manage_packages(attributes):
     Raises:
         LegoException: Raises LegoException.
     """
-    logger = logging.getLogger('packages.manage_packages')
-    if not validate(provided_attributes=attributes.keys(),
-                    supported_attributes=SUPPORTED_ATTRIBUTES,
-                    compulsory_attributes=COMPULSORY_ATTRIBUTE):
+    logger = logging.getLogger('lego.builder_modules.packages.manage_packages')
+    if not validate_attributes(provided_attributes=attributes.keys(),
+                               supported_attributes=SUPPORTED_ATTRIBUTES,
+                               compulsory_attributes=COMPULSORY_ATTRIBUTE):
         raise LegoException(message='Attribute validation failed')
 
     if attributes['provider'] not in SUPPORTED_PACKAGE_PROVIDERS:
@@ -85,7 +85,7 @@ class AptPackageManager(PackageManager):
     """
     def __init__(self):
         super(AptPackageManager, self).__init__()
-        self.__logger = logging.getLogger('AptPackage')
+        self.__logger = logging.getLogger('lego.builder_modules.packages.AptPackage')
         self.__setup()
 
     def __setup(self):

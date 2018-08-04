@@ -17,7 +17,7 @@ class LegoException(Exception):
         return repr(self.__message)
 
 
-def validate(provided_attributes, supported_attributes, compulsory_attributes):
+def validate_attributes(provided_attributes, supported_attributes, compulsory_attributes):
     """
     Manage packages on the system with given details.
     Args:
@@ -29,7 +29,7 @@ def validate(provided_attributes, supported_attributes, compulsory_attributes):
     Raises:
         None
     """
-    logger = logging.getLogger('common.validate')
+    logger = logging.getLogger('lego.common.validate')
     logger.debug("Validating provided_attributes %s with supported_attributes `%s` "
                  "and compulsory_attributes `%s`",
                  provided_attributes, supported_attributes, compulsory_attributes)
