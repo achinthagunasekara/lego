@@ -17,6 +17,8 @@
   files:
     - source: index.php
       destination: /var/www/html/index.php
+    - source: 000-default.conf
+      destination: /etc/apache2/sites-available/000-default.conf
 
 "Restart Apache Service":
   type: command
