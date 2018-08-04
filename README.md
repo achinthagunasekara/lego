@@ -37,8 +37,8 @@ brick_sets:
   provider: apt
   state: present
   packages:
-    - apache
-    - php
+    - apache2
+    - php5
 
 "Create Sample PHP Page":
   type: file
@@ -55,3 +55,36 @@ brick_sets:
   commands:
     - /etc/init.d/apache2 restart
 ```
+
+## Documentation
+
+### Currently Supported Types
+
+#### package
+
+| Attribute  | Explanation |
+| ------------- | ------------- |
+| provider  | Package manager to use on the system. Currently only `apt` is supported |
+| state  | `present` or `absent` |
+| packages | List of packages to manage |
+
+#### file
+
+| Attribute  | Explanation |
+| ------------- | ------------- |
+| state  | `present` or `absent` |
+| owner | Owner of the file |
+| group | Owner group of the file |
+| mode | Permission to set on the file. E.G 0755 |
+| files | Yaml dictionary of `source` and `destination` of the files to be created. `owner`, `group`, and `mode` can be set on a existing file by skipping `source` |
+
+
+### command
+
+| Attribute  | Explanation |
+| ------------- | ------------- |
+| commands  | Yaml list of commands to run |
+
+## [TODO]
+
+Test cases need to be written for modules using `pytest`.
