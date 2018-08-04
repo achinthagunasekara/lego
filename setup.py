@@ -11,7 +11,7 @@ with open('requirements.txt') as requirements_file:
 setup(
     name='lego',
     version='0.1',
-    packages=['lego',],
+    packages=['lego','lego.builder_modules',],
     license='GNU General Public License v3.0+ '
             '(see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)',
     long_description='Lego Configuration Management Tool',

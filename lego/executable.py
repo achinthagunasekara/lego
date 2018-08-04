@@ -3,6 +3,7 @@ Executable for Lego configuration management tool.
 """
 
 import sys
+import logging
 from lego.builder import Builder
 
 
@@ -49,6 +50,9 @@ def main():
     Raises:
         None
     """
+
+    logging.basicConfig(level=logging.DEBUG)
+
     if len(sys.argv) < 2 or sys.argv[1] not in SUPPORTED_COMMANDS:
         lego_help()
         sys.exit(1)
@@ -58,4 +62,4 @@ def main():
             lego_help()
             sys.exit(1)
         builder = Builder(builder_file=sys.argv[2])
-        print(builder.builder_instructions)  # pylint: disable=superfluous-parens
+        builder.build()
