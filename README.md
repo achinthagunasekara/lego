@@ -51,8 +51,7 @@ brick_sets:
       destination: /var/www/html/index.php
 
 "Restart Apache Service":
-  type: service
-  action: restart
-  services:
-    - apache2
+  type: command
+  commands:
+    - /etc/init.d/apache2 restart
 ```

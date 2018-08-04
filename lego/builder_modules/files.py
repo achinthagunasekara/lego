@@ -54,23 +54,23 @@ def create_file(destination, source=None):
     logger = logging.getLogger('lego.builder_modules.files.create_file')
 
     if not source:
-        logger.info("No source file provided for destination file %s. File will not be changed",
+        logger.info("No source file provided for destination file `%s`. File will not be changed",
                     destination)
         return
 
-    logger.info("Creating file %s from %s", destination, source)
+    logger.info("Creating file `%s` from `%s`", destination, source)
 
     # Check if destination file exisits
     if isfile(destination):
         source_file_md5 = get_md5_checksum(file_to_get_md5=source)
         destination_file_md5 = get_md5_checksum(file_to_get_md5=destination)
         if source_file_md5 == destination_file_md5:
-            logger.info("Both source file %s and destination file %s "
-                        "are the same with md5 checksum %s",
+            logger.info("Both source file `%s` and destination file `%s` "
+                        "are the same with md5 checksum `%s`",
                         source, destination, source_file_md5)
             logger.info('Skipping - Nothing to do')
             return
-        logger.info("Destination file %s exists, but different to the source %s. "
+        logger.info("Destination file `%s` exists, but different to the source `%s`. "
                     "It'll be overwritten.", destination, source)
     copyfile(source, destination)
 
@@ -86,11 +86,11 @@ def remove_path(path):
     """
     logger = logging.getLogger('lego.builder_modules.files.remove_path')
     try:
-        logger.info("Removing path %s", path)
+        logger.info("Removing path `%s`", path)
         rmtree(path)
     except OSError as os_ex:
-        raise LegoException(message="Failed to remove {0} with "
-                                    "error {1}".format(path, os_ex))
+        raise LegoException(message="Failed to remove `{0}` with "
+                                    "error `{1}`".format(path, os_ex))
 
 
 def run_chown(path, user, group):
@@ -108,7 +108,7 @@ def run_chown(path, user, group):
     logger = logging.getLogger('lego.builder_modules.files.run_chown')
     uid = pwd.getpwnam(user).pw_uid
     gid = grp.getgrnam(group).gr_gid
-    logger.info("Changing user to %s(%s) and group to %s(%s) for %s",
+    logger.info("Changing user to `%s(%s)` and group to `%s(%s)` for `%s`",
                 user, uid, group, gid, path)
     chown(path, uid, gid)
 
@@ -126,9 +126,9 @@ def run_chmod(path, mode):
     """
     logger = logging.getLogger('lego.builder_modules.files.run_chmod')
     if len(str(mode)) == 4 and mode.isdigit():
-        raise LegoException(message="Mode {0} provided for file "
-                                    "{1} is invalid".format(mode, path))
-    logger.info("Setting mode to %s on %s", mode, path)
+        raise LegoException(message="Mode `{0}` provided for file "
+                                    "`{1}` is invalid".format(mode, path))
+    logger.info("Setting mode to `%s` on `%s`", mode, path)
     chmod(path, mode)
 
 
@@ -160,9 +160,9 @@ def manage_files(brick_set_name, attributes):
                                         "must have at least `destination`")
 
         if attributes['state'] not in ['present', 'absent']:
-            raise LegoException(message="Unsupported state {0} "
-                                        "for {1}".format(attributes['state'],
-                                                         each_file['destination']))
+            raise LegoException(message="Unsupported state `{0}` "
+                                        "for `{1}`".format(attributes['state'],
+                                                           each_file['destination']))
 
         if attributes['state'] == 'absent':
 

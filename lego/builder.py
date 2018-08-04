@@ -7,7 +7,7 @@ import oyaml as yaml
 from lego.common import LegoException
 from lego.builder_modules.packages import manage_packages
 from lego.builder_modules.files import manage_files
-from lego.builder_modules.services import manage_services
+from lego.builder_modules.command import manage_commands
 
 
 class Builder(object):
@@ -17,8 +17,8 @@ class Builder(object):
 
     __supported_modules = [
         'package',
-        'service',
-        'file'
+        'file',
+        'command'
     ]
 
     def __init__(self, builder_file):
@@ -98,5 +98,5 @@ class Builder(object):
                 if brick_details['type'] == 'file':
                     manage_files(brick_set_name=brick_set_name, attributes=brick_details)
 
-                if brick_details['type'] == 'service':
-                    manage_services(attributes=brick_details)
+                if brick_details['type'] == 'command':
+                    manage_commands(attributes=brick_details)
