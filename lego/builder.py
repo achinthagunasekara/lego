@@ -5,9 +5,9 @@ Lego Builder.
 import logging
 import oyaml as yaml
 from lego.common import LegoException
-from lego.builder_modules.packages import manage_packages
-from lego.builder_modules.files import manage_files
-from lego.builder_modules.command import manage_commands
+from lego.brick_modules.packages import PackageBrick
+from lego.brick_modules.files import FileBrick
+from lego.brick_modules.command import CommandBrick
 
 
 class Builder(object):
@@ -78,7 +78,7 @@ class Builder(object):
         Returns:
             None
         Raises:
-            None
+            LegoException: Raises LegoException.
         """
         for brick_set_name, brick_set in self.__brick_sets.items():
             self.__logger.info("Running brick set `%s`", brick_set_name)
@@ -93,10 +93,14 @@ class Builder(object):
                                                                        self.__supported_modules))
 
                 if brick_details['type'] == 'package':
-                    manage_packages(attributes=brick_details)
+                    package_brick = PackageBrick(provided_attributes=brick_details)
+                    package_brick.manage_packages()
 
                 if brick_details['type'] == 'file':
-                    manage_files(brick_set_name=brick_set_name, attributes=brick_details)
+                    file_brick = FileBrick(brick_set_name=brick_set_name,
+                                           provided_attributes=brick_details)
+                    file_brick.manage_files()
 
                 if brick_details['type'] == 'command':
-                    manage_commands(attributes=brick_details)
+                    command_brick = CommandBrick(provided_attributes=brick_details)
+                    command_brick.manage_commands()

@@ -3,56 +3,8 @@ Module to manage packges on a system and it's supporting modules.
 """
 
 import logging
-from lego.common import LegoException, validate_attributes
-
-
-SUPPORTED_PACKAGE_PROVIDERS = [
-    'apt'
-]
-
-
-SUPPORTED_ATTRIBUTES = COMPULSORY_ATTRIBUTE = [
-    'type',
-    'provider',
-    'state',
-    'packages'
-]
-
-
-def manage_packages(attributes):
-    """
-    Manage packages on the system with given details.
-    Args:
-        attributes (dictionary): Details on how to manage this package.
-    Returns:
-        None
-    Raises:
-        LegoException: Raises LegoException.
-    """
-    logger = logging.getLogger('lego.builder_modules.packages.manage_packages')
-    if not validate_attributes(provided_attributes=attributes.keys(),
-                               supported_attributes=SUPPORTED_ATTRIBUTES,
-                               compulsory_attributes=COMPULSORY_ATTRIBUTE):
-        raise LegoException(message='Attribute validation failed')
-
-    if attributes['provider'] not in SUPPORTED_PACKAGE_PROVIDERS:
-        raise LegoException(message="Package provider `{0}` is not "
-                                    "supported. Supported package providers "
-                                    "are `{1}`".format(attributes['provider'],
-                                                       SUPPORTED_PACKAGE_PROVIDERS))
-
-    for each_package in attributes['packages']:
-        logger.info("Managing package `%s` with package manager `%s`",
-                    each_package, attributes['provider'])
-
-        if attributes['provider'] == 'apt':
-            package_manager = AptPackageManager()
-
-        if attributes['state'] == 'present':
-            package_manager.install(package=each_package)
-
-        if attributes['state'] == 'absent':
-            package_manager.uninstall(package=each_package)
+from lego.brick import Brick
+from lego.common import LegoException
 
 
 class PackageManager(object):  # pylint: disable=too-few-public-methods
@@ -149,3 +101,64 @@ class AptPackageManager(PackageManager):
         except Exception as ex:
             raise LegoException(message="Package `{0}` failed to uninstall. "
                                         "Error: {1}".format(package, ex))
+
+
+class PackageBrick(Brick):  # pylint: disable=too-few-public-methods
+    """
+    Brick for managing packages.
+    """
+
+    def __init__(self, provided_attributes):
+        self.__logger = logging.getLogger('lego.brick_modules.packages')
+        self.__provided_attributes = provided_attributes
+        self.__supported_attributes = self.__compulsory_attributes = [
+            'type',
+            'provider',
+            'state',
+            'packages'
+        ]
+        super(PackageBrick, self).__init__(name='lego.brick_modules.package_brick',
+                                           logger=self.__logger,
+                                           provided_attributes=self.__provided_attributes,
+                                           supported_attributes=self.__supported_attributes,
+                                           compulsory_attributes=self.__compulsory_attributes)
+
+        self.__setup_package_manager()
+
+    def __setup_package_manager(self):
+        """
+        Get the package manager object.
+        Args:
+            None
+        Returns:
+            None
+        Raises:
+            LegoException: Raises LegoException.
+        """
+        if self.__provided_attributes['provider'] == 'apt':
+            self.__package_manager = AptPackageManager()
+        else:
+            raise LegoException(message="Package provider `{0}` is not "
+                                        "supported. Supported package providers "
+                                        "are `{1}`".format(self.__provided_attributes['provider'],
+                                                           ['apt']))
+
+    def manage_packages(self):
+        """
+        Manage packages on the system with given details.
+        Args:
+            attributes (dictionary): Details on how to manage this package.
+        Returns:
+            None
+        Raises:
+            None
+        """
+        for each_package in self.__provided_attributes['packages']:
+            self.__logger.info("Managing package `%s` with package manager `%s`",
+                               each_package, self.__provided_attributes['provider'])
+
+            if self.__provided_attributes['state'] == 'present':
+                self.__package_manager.install(package=each_package)
+
+            if self.__provided_attributes['state'] == 'absent':
+                self.__package_manager.uninstall(package=each_package)

@@ -9,17 +9,8 @@ from hashlib import md5
 from shutil import copyfile, rmtree
 import pwd
 import grp
-from lego.common import LegoException, validate_attributes
-
-
-SUPPORTED_ATTRIBUTES = COMPULSORY_ATTRIBUTE = [
-    'type',
-    'state',
-    'owner',
-    'group',
-    'mode',
-    'files'
-]
+from lego.brick import Brick
+from lego.common import LegoException
 
 
 def get_md5_checksum(file_to_get_md5):
@@ -133,48 +124,64 @@ def run_chmod(path, mode):
 
 
 
-def manage_files(brick_set_name, attributes):
+class FileBrick(Brick):  # pylint: disable=too-few-public-methods
     """
-    Manage a given set of files.
-    Args:
-        brick_set_name (str): Name of the current running brick set.
-        attributes (dictionary): Attribute of the current running brick.
-    Returns:
-        None
-    Raises:
-        LegoException: Raises LegoException.
+    Models a file brick.
     """
-    if not validate_attributes(provided_attributes=attributes.keys(),
-                               supported_attributes=SUPPORTED_ATTRIBUTES,
-                               compulsory_attributes=COMPULSORY_ATTRIBUTE):
-        raise LegoException(message='Attribute validation failed')
+    def __init__(self, brick_set_name, provided_attributes):
+        self.__logger = logging.getLogger('lego.brick_modules.packages')
+        self.__brick_set_name = brick_set_name
+        self.__provided_attributes = provided_attributes
+        self.__supported_attributes = self.__compulsory_attributes = [
+            'type',
+            'state',
+            'owner',
+            'group',
+            'mode',
+            'files'
+        ]
+        super(FileBrick, self).__init__(name='lego.brick_modules.file_brick',
+                                        logger=self.__logger,
+                                        provided_attributes=self.__provided_attributes,
+                                        supported_attributes=self.__supported_attributes,
+                                        compulsory_attributes=self.__compulsory_attributes)
 
-    for each_file in attributes['files']:
-        if 'source' in each_file.keys():
-            source_file = "brick_sets/{0}/files/{1}".format(brick_set_name, each_file['source'])
-        else:
-            source_file = None
+    def manage_files(self):
+        """
+        Manage a given set of files.
+        Args:
+            brick_set_name (str): Name of the current running brick set.
+            attributes (dictionary): Attribute of the current running brick.
+        Returns:
+            None
+        Raises:
+            LegoException: Raises LegoException.
+        """
+        for each_file in self.__provided_attributes['files']:
+            if 'source' in each_file.keys():
+                source_file = "brick_sets/{0}/files/{1}".format(self.__brick_set_name,
+                                                                each_file['source'])
+            else:
+                source_file = None
 
-        if 'destination' not in each_file.keys():
-            raise LegoException(message="In file brick, files attribute "
-                                        "must have at least `destination`")
+            if 'destination' not in each_file.keys():
+                raise LegoException(message="In a file brick, files attribute "
+                                            "must have at least the `destination`")
 
-        if attributes['state'] not in ['present', 'absent']:
-            raise LegoException(message="Unsupported state `{0}` "
-                                        "for `{1}`".format(attributes['state'],
-                                                           each_file['destination']))
+            if self.__provided_attributes['state'] not in ['present', 'absent']:
+                raise LegoException(message="Unsupported state `{0}` "
+                                            "for `{1}`".format(self.__provided_attributes['state'],
+                                                               each_file['destination']))
 
-        if attributes['state'] == 'absent':
+            if self.__provided_attributes['state'] == 'absent':
+                remove_path(path=each_file['destination'])
+            else:
+                create_file(destination=each_file['destination'],
+                            source=source_file)
 
-            remove_path(path=each_file['destination'])
+                run_chmod(path=each_file['destination'],
+                          mode=self.__provided_attributes['mode'])
 
-        else:
-            create_file(destination=each_file['destination'],
-                        source=source_file)
-
-            run_chmod(path=each_file['destination'],
-                      mode=attributes['mode'])
-
-            run_chown(path=each_file['destination'],
-                      user=attributes['owner'],
-                      group=attributes['group'])
+                run_chown(path=each_file['destination'],
+                          user=self.__provided_attributes['owner'],
+                          group=self.__provided_attributes['group'])
