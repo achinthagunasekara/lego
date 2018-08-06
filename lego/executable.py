@@ -2,9 +2,11 @@
 Executable for Lego configuration management tool.
 """
 
+
 import sys
 import logging
 from lego.builder import Builder
+from lego.common import LegoException
 
 
 SUPPORTED_COMMANDS = [
@@ -52,6 +54,7 @@ def main():
     """
 
     logging.basicConfig(level=logging.DEBUG)
+    logger = logging.getLogger('lego.executable.main')
 
     if len(sys.argv) < 2 or sys.argv[1] not in SUPPORTED_COMMANDS:
         lego_help()
@@ -61,5 +64,10 @@ def main():
         if len(sys.argv) < 3:
             lego_help()
             sys.exit(1)
-        builder = Builder(builder_file=sys.argv[2])
-        builder.build()
+        try:
+            builder = Builder(builder_file=sys.argv[2])
+            builder.build()
+        except LegoException as lego_ex:
+            logger.error("Something went wrong while running `lego build` with error %s", lego_ex)
+        except Exception as ex:  # pylint: disable=broad-except
+            logger.error("Something badly went wrong while running 'lego build` with error %s", ex)

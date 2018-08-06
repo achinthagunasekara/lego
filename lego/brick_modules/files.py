@@ -2,6 +2,7 @@
 Module to manage files on the system.
 """
 
+
 import logging
 from os.path import isfile
 from os import chmod, chown
@@ -42,7 +43,7 @@ def create_file(destination, source=None):
     Raises:
         None
     """
-    logger = logging.getLogger('lego.builder_modules.files.create_file')
+    logger = logging.getLogger('lego.brick_modules.files.create_file')
 
     if not source:
         logger.info("No source file provided for destination file `%s`. File will not be changed",
@@ -75,13 +76,13 @@ def remove_path(path):
     Raises:
         LegoException: Raises LegoException.
     """
-    logger = logging.getLogger('lego.builder_modules.files.remove_path')
+    logger = logging.getLogger('lego.brick_modules.files.remove_path')
     try:
         logger.info("Removing path `%s`", path)
         rmtree(path)
     except OSError as os_ex:
-        raise LegoException(message="Failed to remove `{0}` with "
-                                    "error `{1}`".format(path, os_ex))
+        raise LegoException("Failed to remove `{0}` with "
+                            "error `{1}`".format(path, os_ex))
 
 
 def run_chown(path, user, group):
@@ -96,7 +97,7 @@ def run_chown(path, user, group):
     Raises:
         None
     """
-    logger = logging.getLogger('lego.builder_modules.files.run_chown')
+    logger = logging.getLogger('lego.brick_modules.files.run_chown')
     uid = pwd.getpwnam(user).pw_uid
     gid = grp.getgrnam(group).gr_gid
     logger.info("Changing user to `%s(%s)` and group to `%s(%s)` for `%s`",
@@ -115,10 +116,10 @@ def run_chmod(path, mode):
     Raises:
         LegoException: Raises LegoException.
     """
-    logger = logging.getLogger('lego.builder_modules.files.run_chmod')
+    logger = logging.getLogger('lego.brick_modules.files.run_chmod')
     if len(str(mode)) == 4 and mode.isdigit():
-        raise LegoException(message="Mode `{0}` provided for file "
-                                    "`{1}` is invalid".format(mode, path))
+        raise LegoException("Mode `{0}` provided for file "
+                            "`{1}` is invalid".format(mode, path))
     logger.info("Setting mode to `%s` on `%s`", mode, path)
     chmod(path, mode)
 
@@ -128,60 +129,59 @@ class FileBrick(Brick):  # pylint: disable=too-few-public-methods
     """
     Models a file brick.
     """
-    def __init__(self, brick_set_name, provided_attributes):
-        self.__logger = logging.getLogger('lego.brick_modules.packages')
-        self.__brick_set_name = brick_set_name
-        self.__provided_attributes = provided_attributes
-        self.__supported_attributes = self.__compulsory_attributes = [
-            'type',
-            'state',
-            'owner',
-            'group',
-            'mode',
-            'files'
-        ]
-        super(FileBrick, self).__init__(name='lego.brick_modules.file_brick',
-                                        logger=self.__logger,
-                                        provided_attributes=self.__provided_attributes,
-                                        supported_attributes=self.__supported_attributes,
-                                        compulsory_attributes=self.__compulsory_attributes)
 
-    def manage_files(self):
+    supported_attributes = compulsory_attributes = [
+        'type',
+        'state',
+        'owner',
+        'group',
+        'mode',
+        'files'
+    ]
+
+    def __init__(self, brick_set_name, provided_attributes):
+        self.brick_set_name = brick_set_name
+        self.provided_attributes = provided_attributes
+        super(FileBrick, self).__init__(name='file_brick',
+                                        provided_attributes=self.provided_attributes,
+                                        supported_attributes=FileBrick.supported_attributes,
+                                        compulsory_attributes=FileBrick.compulsory_attributes)
+
+    def run_brick(self):
         """
         Manage a given set of files.
         Args:
-            brick_set_name (str): Name of the current running brick set.
-            attributes (dictionary): Attribute of the current running brick.
+            None
         Returns:
             None
         Raises:
             LegoException: Raises LegoException.
         """
-        for each_file in self.__provided_attributes['files']:
+        for each_file in self.provided_attributes['files']:
             if 'source' in each_file.keys():
-                source_file = "brick_sets/{0}/files/{1}".format(self.__brick_set_name,
+                source_file = "brick_sets/{0}/files/{1}".format(self.brick_set_name,
                                                                 each_file['source'])
             else:
                 source_file = None
 
             if 'destination' not in each_file.keys():
-                raise LegoException(message="In a file brick, files attribute "
-                                            "must have at least the `destination`")
+                raise LegoException("In a file brick, files attribute "
+                                    "must have at least the `destination`")
 
-            if self.__provided_attributes['state'] not in ['present', 'absent']:
-                raise LegoException(message="Unsupported state `{0}` "
-                                            "for `{1}`".format(self.__provided_attributes['state'],
-                                                               each_file['destination']))
+            if self.provided_attributes['state'] not in ['present', 'absent']:
+                raise LegoException("Unsupported state `{0}` "
+                                    "for `{1}`".format(self.provided_attributes['state'],
+                                                       each_file['destination']))
 
-            if self.__provided_attributes['state'] == 'absent':
+            if self.provided_attributes['state'] == 'absent':
                 remove_path(path=each_file['destination'])
             else:
                 create_file(destination=each_file['destination'],
                             source=source_file)
 
                 run_chmod(path=each_file['destination'],
-                          mode=self.__provided_attributes['mode'])
+                          mode=self.provided_attributes['mode'])
 
                 run_chown(path=each_file['destination'],
-                          user=self.__provided_attributes['owner'],
-                          group=self.__provided_attributes['group'])
+                          user=self.provided_attributes['owner'],
+                          group=self.provided_attributes['group'])

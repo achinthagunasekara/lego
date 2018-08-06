@@ -6,7 +6,7 @@
   state: present
   packages:
     - apache2
-    - php5
+    - php
 
 "Create Sample PHP Page":
   type: file

@@ -2,6 +2,7 @@
 Shared functions and classes for the Lego configuration management tool.
 """
 
+
 import logging
 
 
@@ -9,12 +10,7 @@ class LegoException(Exception):
     """
     Custom LegoException specific to Lego configuration management tool.
     """
-
-    def __init__(self, message):  # pylint: disable=super-init-not-called
-        self.__message = message
-
-    def __str__(self):
-        return repr(self.__message)
+    pass
 
 
 def validate_attributes(provided_attributes, supported_attributes, compulsory_attributes):

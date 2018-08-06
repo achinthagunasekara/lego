@@ -15,7 +15,7 @@ class Builder(object):
     Builder for Lego tool.
     """
 
-    __supported_modules = [
+    supported_modules = [
         'package',
         'file',
         'command'
@@ -35,6 +35,8 @@ class Builder(object):
             None
         Returns:
             dictionary: Builder instructions dictionary.
+        Raises:
+            None
         """
         return self.__brick_sets
 
@@ -54,10 +56,10 @@ class Builder(object):
             try:
                 brick_sets = yaml.load(stream)['brick_sets']
             except yaml.YAMLError as yaml_ex:
-                raise LegoException(message="Something went wrong while loading "
-                                            "the builder file with error {0}".format(yaml_ex))
+                raise LegoException("Something went wrong while loading "
+                                    "the builder file with error {0}".format(yaml_ex))
             except KeyError:
-                raise LegoException(message="Builder file is missing `brick_sets`")
+                raise LegoException("Builder file is missing `brick_sets`")
 
         for each_brick_set in brick_sets:
             self.__logger.debug("Loading brick set %s", each_brick_set)
@@ -66,9 +68,9 @@ class Builder(object):
                 try:
                     self.__brick_sets[each_brick_set] = yaml.load(stream)
                 except yaml.YAMLError as yaml_ex:
-                    raise LegoException(message="Something went wrong while loading "
-                                                "brick set `{0}` the builder file with "
-                                                "error {1}".format(each_brick_set, yaml_ex))
+                    raise LegoException("Something went wrong while loading "
+                                        "brick set `{0}` the builder file with "
+                                        "error {1}".format(each_brick_set, yaml_ex))
 
     def build(self):
         """
@@ -87,20 +89,16 @@ class Builder(object):
 
                 self.__logger.info("Running brick `%s`", brick_name)
 
-                if brick_details['type'] not in self.__supported_modules:
-                    raise LegoException(message="Unknown brick type `{0}`. Only brick types {1} "
-                                                "are supported".format(brick_details['type'],
-                                                                       self.__supported_modules))
-
                 if brick_details['type'] == 'package':
-                    package_brick = PackageBrick(provided_attributes=brick_details)
-                    package_brick.manage_packages()
+                    brick = PackageBrick(provided_attributes=brick_details)
+                elif brick_details['type'] == 'file':
+                    brick = FileBrick(brick_set_name=brick_set_name,
+                                      provided_attributes=brick_details)
+                elif brick_details['type'] == 'command':
+                    brick = CommandBrick(provided_attributes=brick_details)
+                else:
+                    raise LegoException("Unknown brick type `{0}`. Only brick types {1} "
+                                        "are supported".format(brick_details['type'],
+                                                               self.supported_modules))
 
-                if brick_details['type'] == 'file':
-                    file_brick = FileBrick(brick_set_name=brick_set_name,
-                                           provided_attributes=brick_details)
-                    file_brick.manage_files()
-
-                if brick_details['type'] == 'command':
-                    command_brick = CommandBrick(provided_attributes=brick_details)
-                    command_brick.manage_commands()
+                brick.run_brick()
