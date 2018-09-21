@@ -87,4 +87,5 @@ brick_sets:
 
 ## [TODO]
 
-Test cases need to be written for modules using `pytest`.
+* Test cases need to be written for modules using `pytest`.
+* Perhaps make modules dropable to a directory...?
