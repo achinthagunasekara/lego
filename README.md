@@ -89,3 +89,4 @@ brick_sets:
 
 * Test cases need to be written for modules using `pytest`.
 * Perhaps make modules dropable to a directory...?
+* Add more blocks (E.G service, firewall rules)
